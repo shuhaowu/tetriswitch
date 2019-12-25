@@ -1,32 +1,36 @@
 #include <stdio.h>
 #include <stdarg.h>
-#ifdef SWITCH
-    #include <switch.h>
-#else
-    #include "switchdefs.h"
-#endif
+
+#include <switch.h>
 
 #include "draw.h"
 
 static u32* framebuf;
-static u32 fbwidth;
-static u32 fbheight;
+static u32 stride;
 
-void drawStart() {
-    framebuf = (u32*)gfxGetFramebuffer(&fbwidth, &fbheight);
+#define FB_WIDTH 1280
+#define FB_HEIGHT 720
+
+static inline u32 idx(u32 x, u32 y) {
+    return y * stride / sizeof(u32) + x;
+}
+
+void drawStart(u32* fb, u32 s) {
+    framebuf = fb;
+    stride = s;
 }
 
 void drawClearScreen(u32 color) {
-	int i;
-    for (i = 0; i < fbwidth * fbheight; ++i) {
-        framebuf[i] = color;
+    for (u32 y = 0; y < FB_HEIGHT; y++) {
+        for (u32 x = 0; x < FB_WIDTH; x++){
+            framebuf[idx(x, y)] = color;
+        }
     }
 }
 
 void drawPixel(int x, int y, u32 color) {
-    if (x >= 0 && x < fbwidth && y >= 0 && y < fbheight) {
-        int pos = y * fbwidth + x;
-        framebuf[pos] = color;
+    if (x >= 0 && x < FB_WIDTH && y >= 0 && y < FB_HEIGHT) {
+        framebuf[idx(x, y)] = color;
     }
 }
 
@@ -63,9 +67,9 @@ void drawBitmap(int x, int y, Bitmap bmp) {
     int xx, yy;
     for (yy = y; yy < y + bmp.height; ++yy) {
         for (xx = x; xx < x + bmp.width; ++xx) {
-            if (xx >= 0 && xx < fbwidth && yy >= 0 && yy < fbheight) {
-                int pos = yy * fbwidth + xx;
-                framebuf[pos] = bmp.buf[pos];
+            if (xx >= 0 && xx < FB_WIDTH && yy >= 0 && yy < FB_HEIGHT) {
+                int pos = yy * FB_HEIGHT + xx;
+                framebuf[idx(x, y)] = bmp.buf[pos];
             }
         }
     }

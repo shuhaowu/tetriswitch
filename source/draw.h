@@ -1,11 +1,7 @@
 #ifndef DRAW_H
 #define DRAW_H
 
-#ifdef SWITCH
-    #include <switch/types.h>
-#else
-    #include "switchdefs.h"
-#endif
+#include <switch/types.h>
 
 #include "font.h"
 
@@ -15,7 +11,7 @@ typedef struct {
     const u32* buf;
 } Bitmap;
 
-void drawStart();
+void drawStart(u32*, u32);
 void drawClearScreen(u32 color);
 
 void drawPixel(int x, int y, u32 color);

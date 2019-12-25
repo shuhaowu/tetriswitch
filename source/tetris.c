@@ -1,11 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#ifdef SWITCH
-    #include <switch.h>
-#else
-    #include "switchdefs.h"
-#endif
+#include <switch.h>
 
 #include "draw.h"
 #include "tetris.h"
@@ -71,6 +67,7 @@ static Tetromino onhold = { 0, 3, 0, 0, 1 };
 static Tetromino ghost;
 static u8 currentbag[] = { 0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6 };
 static u8 currentbagpos;
+static char logline[100];
 
 static const Pair rotationdataJLSTZ[4][5] = {
     {{ 0, 0}, { 0, 0}, { 0, 0}, { 0, 0}, { 0, 0}}, // 0
@@ -151,12 +148,13 @@ static void saveHighscore() {
 }
 
 static void loadHighscore() {
-    FILE* f = fopen("highscore.bin", "rb");
-    fread(&highscore, sizeof(highscore), 1, f);
-    if (highscore > MAX_SCORE) {
-        highscore = MAX_SCORE;
-    }
-    fclose(f);
+    highscore = MAX_SCORE;
+    // FILE* f = fopen("highscore.bin", "rb");
+    // fread(&highscore, sizeof(highscore), 1, f);
+    // if (highscore > MAX_SCORE) {
+    //     highscore = MAX_SCORE;
+    // }
+    // fclose(f);
 }
 
 static int checkCollision(Tetromino* t, s8 x, s8 y) {
@@ -479,8 +477,8 @@ static void renderTetromino(Tetromino* t) {
     renderBlockData(x, y, t->type, t->rot, t->ghost);
 }
 
-void render() {
-    drawStart();
+void render(u32* framebuf, u32 stride) {
+    drawStart(framebuf, stride);
     renderGrid();
     if (!lineclearticks) {
         renderTetromino(&ghost);
@@ -507,6 +505,8 @@ void render() {
         renderBlockData(40 + tetrodata[onhold.type].offs, 120 + tetrodata[onhold.type].offs, onhold.type, 0, 0);
     }
 
+    drawText(tahoma24, 40, 600, TEXT_COLOR, logline);
+
     drawText(tahoma24, GRID_XOFFSET + 400, 80, TEXT_COLOR, "NEXT");
     u8 i;
     for (i = 0; i < NEXT_COUNT; ++i) {
@@ -515,4 +515,8 @@ void render() {
         u8 type = currentbag[(currentbagpos + i) % 14];
         renderBlockData(x + tetrodata[type].offs, 120 + tetrodata[type].offs, type, 0, 0);
     }
+}
+
+void logg(const char* s) {
+    snprintf(logline, 100, "%s", s);
 }
